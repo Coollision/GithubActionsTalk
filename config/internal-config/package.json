@@ -1,0 +1,8 @@
+{
+  "name": "@internal/config",
+  "packageManager": "yarn@3.1.1",
+  "files": [
+    "tsconfig.json",
+    "configuration/**"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "types": [ "node"],
+        "outDir": "lib",
+        "rootDir": "src"
+    },
+    "extends": "../../../tsconfig.basic.json",
+    "include": ["lib"]
+}
