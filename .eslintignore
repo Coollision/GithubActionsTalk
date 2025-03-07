@@ -1,0 +1,7 @@
+node_modules/**
+dist/**
+**/coverage/**
+coverage/**
+*.mjs
+*.cjs
+*.js

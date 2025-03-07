@@ -1,0 +1,24 @@
+{
+  "name": "@internal/services",
+  "version": "0.0.0",
+  "main": "src/index",
+  "files": [
+    "src/"
+  ],
+  "dependencies": {
+    "vitest": "^3.0.3"
+  },
+  "scripts": {
+    "test": "yarn test:unit",
+    "test:unit": "vitest run ./__tests__/** --config ./vitest.config.ts",
+    "tsc": "tsc -p tsconfig.json",
+    "lint:fix": "eslint . --fix",
+    "@internal/repositories": "workspace:^",
+    "clean": "rm -rf ./.turbo && rm -rf tsconfig.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@internal/config": "workspace:^",
+    "tsup": "^5.12.0",
+    "typescript": "^4.4.4"
+  }
+}

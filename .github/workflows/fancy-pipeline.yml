@@ -1,0 +1,91 @@
+name: Fancy Pipeline
+
+on: push
+
+jobs:
+  hello_world:
+    runs-on: ubuntu-latest
+    outputs:
+      words: ${{ steps.split-words.outputs.words }}
+    steps:
+      - name: Say Hello
+        run: echo "Hello to the world of fancy pipelines!"
+
+      - name: Log a line of text
+        run: echo "This is a fancy pipeline that does nothing but log out this line of text."
+
+      - name: Replace spaces with dashes
+        id: replace
+        run: |
+          text="This is a fancy pipeline that does nothing but log out this line of text."
+          echo "modified_text=${text// /-}" >> $GITHUB_OUTPUT
+
+      - name: Log modified text
+        run: |
+          echo "Modified text: ${{ steps.replace.outputs.modified_text }}"
+
+      - name: Output list of words
+        id: split-words
+        run: |
+          text="This is a fancy pipeline that does nothing but log out this line of text."
+          words=$(echo $text | tr ' ' '\n' | jq -R -s -c 'split("\n")[:-1]')
+          echo "words=$words" >> $GITHUB_OUTPUT
+
+      - name: Log list of words
+        run: |
+          echo "List of words: ${{ steps.split-words.outputs.words }}"
+
+  hello_parts:
+    needs: hello_world
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        word: ${{ fromJson(needs.hello_world.outputs.words) }}
+    name: Hello ${{ matrix.word }}
+    outputs:
+      words: ${{ needs.hello_world.outputs.words }}
+    steps:
+      - name: Random sleep
+        run: sleep $((RANDOM % 10 + 1))
+
+      - name: Log each word
+        run: | 
+          echo "Word: ${{ matrix.word }}"
+
+  log_sentence:
+    needs: hello_parts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Capture and log sentence
+        run: |
+          words='${{ needs.hello_parts.outputs.words }}'
+          sentence=$(echo $words | jq -r '. | join(" ")')
+          echo "Sentence: $sentence"
+
+  independent_job_1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Independent Job 1
+        run: echo "This is an independent job 1."
+
+  independent_job_2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Independent Job 2
+        run: echo "This is an independent job 2."
+
+  log_env_vars:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log environment variables
+        run: |
+          echo "GITHUB_ACTOR: $GITHUB_ACTOR"
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_SHORT_SHA: ${GITHUB_SHA::7}"
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_WORKFLOW: $GITHUB_WORKFLOW"
+          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+          # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
