@@ -121,7 +121,7 @@ jobs:
           context: dist/build/${{ matrix.app }}
           file: dist/build/${{ matrix.app }}/Dockerfile
           push: true
-          tags: ${{REGISTERY_BASE}}/${{ matrix.app }}:latest
+          tags: ${{ env.REGISTERY_BASE }}${{ matrix.app }}:latest
 
 
 
