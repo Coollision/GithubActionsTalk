@@ -1,4 +1,4 @@
-# Github actions techtalk
+# Github actions TechTalk
 
 <!-- set width of image -->
 ![alt text](./readme-assets/image.png =800x)

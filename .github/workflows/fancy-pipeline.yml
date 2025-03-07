@@ -9,7 +9,7 @@ jobs:
       words: ${{ steps.split-words.outputs.words }}
     steps:
       - name: Say Hello
-        run: echo "Hello to the world of fancy pipelines!"
+        run: echo "Hello to the world of fancy pipel ines!"
 
       - name: Log a line of text
         run: echo "This is a fancy pipeline that does nothing but log out this line of text."

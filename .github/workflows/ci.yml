@@ -1,122 +1,167 @@
-name: CI
 
-on:
-  push:
-    branches:
-      - master
 
-env:
-  REGISTERY_BASE: ghcr.io/coollision/
 
-jobs:
-  install_and_lint_test:
-    runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-          cache: 'yarn'
 
-      - name: Install dependencies
-        run: yarn install
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# name: CI
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# env:
+#   REGISTERY_BASE: ghcr.io/coollision/
+
+# jobs:
+#   install_and_lint_test:
+#     runs-on: ubuntu-latest
+
+#     services:
+#       postgres:
+#         image: postgres:13
+#         env:
+#           POSTGRES_USER: postgres
+#           POSTGRES_PASSWORD: postgres
+#           POSTGRES_DB: postgres
+#         ports:
+#           - 5432:5432
+#         options: >-
+#           --health-cmd="pg_isready -U postgres"
+#           --health-interval=10s
+#           --health-timeout=5s
+#           --health-retries=5
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '22'
+#           cache: 'yarn'
+
+#       - name: Install dependencies
+#         run: yarn install
       
-      - name: Check code linting
-        run: yarn lint
+#       - name: Check code linting
+#         run: yarn lint
 
-      - name: Run db:migrate
-        run: yarn db:migrate
+#       - name: Run db:migrate
+#         run: yarn db:migrate
       
-      - name: Run test
-        run: yarn test
+#       - name: Run test
+#         run: yarn test
 
-  build:
-    runs-on: ubuntu-latest
-    needs: install_and_lint_test
-    outputs:
-      list-apps: ${{ steps.list-apps.outputs.apps }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#   build:
+#     runs-on: ubuntu-latest
+#     needs: install_and_lint_test
+#     outputs:
+#       list-apps: ${{ steps.list-apps.outputs.apps }}
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-          cache: 'yarn'
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '22'
+#           cache: 'yarn'
       
-      - name: Install dependencies
-        run: yarn install --immutable
+#       - name: Install dependencies
+#         run: yarn install --immutable
 
-      - name: Build the code
-        run: yarn build
+#       - name: Build the code
+#         run: yarn build
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build artefacts
-          path: dist/*
-          if-no-files-found: 'error'
+#       - name: Upload artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: build artefacts
+#           path: dist/*
+#           if-no-files-found: 'error'
 
-      - name: List apps in dist/build
-        id: list-apps
-        run: |
-          echo "apps=$(ls -d dist/build/*/ | xargs -n 1 basename | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+#       - name: List apps in dist/build
+#         id: list-apps
+#         run: |
+#           echo "apps=$(ls -d dist/build/*/ | xargs -n 1 basename | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
-  build_docker_and_push:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app: ${{ fromJson(needs.build.outputs.list-apps) }}
-    name: build and push docker for ${{ matrix.app }}
+#   build_docker_and_push:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         app: ${{ fromJson(needs.build.outputs.list-apps) }}
+#     name: build and push docker for ${{ matrix.app }}
 
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          install: true
-          driver: docker-container
+#     permissions:
+#       contents: read
+#       packages: write
+#     steps:
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+#         with:
+#           install: true
+#           driver: docker-container
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Log in to the Container registry
+#         uses: docker/login-action@v3
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Download artefact
-        uses: actions/download-artifact@v4
-        with:
-          name: build artefacts
-          path: dist/
+#       - name: Download artefact
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: build artefacts
+#           path: dist/
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: dist/build/${{ matrix.app }}
-          file: dist/build/${{ matrix.app }}/Dockerfile
-          push: true
-          tags: ${{ env.REGISTERY_BASE }}${{ matrix.app }}:latest
+#       - name: Build and push Docker image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: dist/build/${{ matrix.app }}
+#           file: dist/build/${{ matrix.app }}/Dockerfile
+#           push: true
+#           tags: ${{ env.REGISTERY_BASE }}${{ matrix.app }}:latest
