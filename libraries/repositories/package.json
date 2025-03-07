@@ -4,7 +4,7 @@
   "main": "src/index",
   "files": [
     "src/",
-   "knexfile.ts"
+    "knexfile.ts"
   ],
   "dependencies": {
     "knex": "^3.1.0",

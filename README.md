@@ -195,27 +195,18 @@ jobs:
         with:
           node-version: '22'
           cache: 'yarn'
-      
-      - name: Run install
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: install # will run `yarn install` command
 
-      - name: Run lint
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: lint # will run `yarn lint` command
+      - name: Install dependencies
+        run: yarn install
+      
+      - name: Check code linting
+        run: yarn lint
 
       - name: Run db:migrate
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: db:migrate
-
+        run: yarn db:migrate
+      
       - name: Run test
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: test 
-
+        run: yarn test
 
   build:
     runs-on: ubuntu-latest
@@ -232,15 +223,11 @@ jobs:
           node-version: '22'
           cache: 'yarn'
       
-      - name: Run install
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: install --immutable
+      - name: Install dependencies
+        run: install --immutable
 
-      - name: Run build
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: build
+      - name: Build the code
+        run: build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -265,8 +252,20 @@ jobs:
     permissions:
       contents: read
       packages: write
-   
     steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver: docker-container
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Download artefact
         uses: actions/download-artifact@v4
         with:
