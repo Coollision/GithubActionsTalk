@@ -65,10 +65,10 @@ jobs:
           cache: 'yarn'
       
       - name: Install dependencies
-        run: install --immutable
+        run: yarn install --immutable
 
       - name: Build the code
-        run: build
+        run: yarn build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
